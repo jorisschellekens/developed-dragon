@@ -21,7 +21,7 @@ public class WikipediaCache {
     private Map<Integer, Set<Integer>> cache = new HashMap<>();
 
     private int nofChanges = 0;
-    private int nofChangesBeforeSave = 512;
+    private int nofChangesBeforeSave = 5000;
 
     private WikipediaCache() {
         load();

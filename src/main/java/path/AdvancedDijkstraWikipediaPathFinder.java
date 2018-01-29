@@ -11,6 +11,7 @@ public class AdvancedDijkstraWikipediaPathFinder implements IWikipediaPathFinder
 
     private static Set<Integer> frontier = buildFrontier();
     private static Set<Integer> core = buildCore();
+    private static Map<Integer, Double> priorities = eigenvalues();
 
     @Override
     public String[] find(String start, String end) {
@@ -21,6 +22,8 @@ public class AdvancedDijkstraWikipediaPathFinder implements IWikipediaPathFinder
         int endId = WikipediaCache.get().lookup(end);
 
         List<Integer> path = searchCore(startId, goToCore(endId));
+        if(path.isEmpty())
+            return new String[]{};
         if(path.get(path.size() -1) != endId)
             path.add(endId);
 
@@ -50,7 +53,6 @@ public class AdvancedDijkstraWikipediaPathFinder implements IWikipediaPathFinder
         int current = startId;
         if(!core.contains(current)) {
             WikipediaCache.get().outgoing(WikipediaCache.get().lookup(current));
-            WikipediaCache.get().store();
             frontier.remove(current);
             core.add(current);
         }
@@ -95,7 +97,9 @@ public class AdvancedDijkstraWikipediaPathFinder implements IWikipediaPathFinder
                     continue;
                 if(WikipediaCache.get().outgoing(e.getKey()) == null)
                     continue;
-                if(next == -1 || e.getValue() < distance.get(next))
+                if(next == -1 ||                                                                                    // best distance isn't known yet
+                        e.getValue() < distance.get(next) ||                                                        // distance is better
+                        (e.getValue() == distance.get(next) && priority(e.getKey()) > priority(next)))              // distance is equal, but eigenvalue is better
                     next = e.getKey();
             }
             if(next == -1)
@@ -120,6 +124,13 @@ public class AdvancedDijkstraWikipediaPathFinder implements IWikipediaPathFinder
         return new ArrayList<>();
     }
 
+    private double priority(int id)
+    {
+        if(priorities.containsKey(id))
+            return priorities.get(id);
+        return 0.75;
+    }
+
     private Set<Integer> goToCore(int articleId)
     {
         if(core.contains(articleId))
@@ -134,6 +145,39 @@ public class AdvancedDijkstraWikipediaPathFinder implements IWikipediaPathFinder
             }
             return prevInCore;
         }
+    }
+
+    private static Map<Integer, Double> eigenvalues()
+    {
+        Map<Integer, Double> tmp0 = new HashMap<>();
+        Map<Integer, Double> tmp1 = new HashMap<>();
+        for(int i : core)
+        {
+            tmp0.put(i, 1.0);
+        }
+        double alpha = 0.85;
+        for(int iteration=0;iteration<20;iteration++) {
+            for (int i : core) {
+                double v = (tmp0.get(i) / WikipediaCache.get().outgoing(i).size()) * alpha;
+                for (int outId : WikipediaCache.get().outgoing(i)) {
+                    if(!core.contains(outId))
+                        continue;
+                    if (!tmp1.containsKey(outId))
+                        tmp1.put(outId, 0.0);
+                    tmp1.put(outId, tmp1.get(outId) + v);
+                }
+            }
+            for(int i : core)
+            {
+                if(!tmp1.containsKey(i))
+                    tmp1.put(i, 0.0);
+                tmp1.put(i, tmp1.get(i) + (1.0 - alpha));
+            }
+            tmp0.clear();
+            tmp0.putAll(tmp1);
+            tmp1.clear();
+        }
+        return tmp0;
     }
 
     private static final Set<Integer> buildFrontier()
