@@ -159,6 +159,8 @@ public class WikipediaCache {
             Document htmlDoc = Jsoup.parse(new URL(url), 5000);
             for(Element e : htmlDoc.select("a"))
             {
+                if(e.parent().nodeName().equals("cite"))
+                    continue;
                 String href = e.attr("href");
                 if(href.startsWith("/wiki/") && !e.text().isEmpty())
                 {
