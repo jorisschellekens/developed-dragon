@@ -205,7 +205,7 @@ public class AdvancedDijkstraWikipediaPathFinder implements IWikipediaPathFinder
             tmp0.put(i, 1.0);
         }
         double alpha = 0.85;
-        for(int iteration=0;iteration<20;iteration++) {
+        for(int iteration=0;iteration<16;iteration++) {
             for (int i : core) {
                 double v = (tmp0.get(i) / WikipediaCache.get().outgoing(i).size()) * alpha;
                 for (int outId : WikipediaCache.get().outgoing(i)) {
