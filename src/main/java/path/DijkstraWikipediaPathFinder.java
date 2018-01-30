@@ -5,18 +5,20 @@ import wikipedia.WikipediaCache;
 import java.util.*;
 
 /**
+ * This class provides a basic implementation of IWikipediaPathFinder
+ * using Dijkstra's algorithm for minimal path construction.
  * Created by joris on 1/26/18.
  */
 
 public class DijkstraWikipediaPathFinder implements IWikipediaPathFinder {
 
     @Override
-    public String[] find(String start, String end) {
-        if(!WikipediaCache.get().has(start) || !WikipediaCache.get().has(end))
+    public String[] find(String start, String goal) {
+        if(!WikipediaCache.get().has(start) || !WikipediaCache.get().has(goal))
             return new String[]{};
 
         int startId = WikipediaCache.get().lookup(start);
-        int endId = WikipediaCache.get().lookup(end);
+        int endId = WikipediaCache.get().lookup(goal);
 
         Map<Integer, Integer> distance = new HashMap<>();
         Map<Integer, Integer> previous = new HashMap<>();

@@ -13,13 +13,15 @@ import java.util.Random;
 public class TestPerformance {
 
     private static Random RANDOM = new java.util.Random(System.currentTimeMillis());
-    private int N = 32;
+    private int N = 128;
 
     @Test
     public void testPerformance()
     {
         // create IWikipediaPathFinder
+        long initialLoadTime = System.currentTimeMillis();
         IWikipediaPathFinder pathFinder = new AdvancedDijkstraWikipediaPathFinder();
+        initialLoadTime = System.currentTimeMillis() - initialLoadTime;
 
         // perform N tests
         List<String> articles = new ArrayList<>(WikipediaCache.get().articles());
@@ -34,26 +36,27 @@ public class TestPerformance {
         }
 
         // display statistics
-        double succes = 0.0;
-        double max = 0.0;
-        double min = Double.MAX_VALUE;
-        double avg = 0.0;
+        double succes = 0;
+        double maxTime = 0.0;
+        double minTIme = Double.MAX_VALUE;
+        double avgTime = 0.0;
         for(int i=0;i<N;i++)
         {
             if(measurements.get(i) != -1)
             {
                 succes++;
-                max = java.lang.Math.max(max, measurements.get(i));
-                min = java.lang.Math.min(min, measurements.get(i));
-                avg += measurements.get(i);
+                maxTime = java.lang.Math.max(maxTime, measurements.get(i));
+                minTIme = java.lang.Math.min(minTIme, measurements.get(i));
+                avgTime += measurements.get(i);
             }
         }
-        avg /=  N;
+        avgTime /=  N;
         succes /= N;
+        System.out.println("load time    : " + initialLoadTime + " ms");
         System.out.println("success rate : " + succes);
-        System.out.println("max          : " + (int) max + " ms");
-        System.out.println("min          : " + (int) min + " ms");
-        System.out.println("avg          : " + (int) avg + " ms");
+        System.out.println("max          : " + (int) maxTime + " ms");
+        System.out.println("min          : " + (int) minTIme + " ms");
+        System.out.println("avg          : " + (int) avgTime + " ms");
     }
 
     private long measure(String start, String goal, IWikipediaPathFinder pathFinder)

@@ -6,6 +6,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * This class acts as a depth first search on Wikipedia.
+ * By performing the search, the cache will (after a threshold of
+ * changes is reached) store itself.
+ * Thus, by calling the DepthFirstWikipediaMiner, the end user
+ * can build a cache of Wikipedia.
  * Created by joris on 1/26/18.
  */
 public class DepthFirstWikipediaMiner {

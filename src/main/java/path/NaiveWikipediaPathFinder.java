@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * This is a very naive implementation of IWikipediaPathFinder that
+ * attempts a depth-first-search strategy.
  * Created by joris on 1/26/18.
  */
 public class NaiveWikipediaPathFinder implements IWikipediaPathFinder
@@ -14,10 +16,10 @@ public class NaiveWikipediaPathFinder implements IWikipediaPathFinder
     private String[] winningPath;
     private int maxPath = 6;
 
-    public String[] find(String start, String end)
+    public String[] find(String start, String goal)
     {
         winningPath = null;
-        find(start, end, new ArrayList<String>());
+        find(start, goal, new ArrayList<String>());
         return winningPath;
     }
 

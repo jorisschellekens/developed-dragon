@@ -2,24 +2,51 @@ package path;
 
 import wikipedia.WikipediaCache;
 
+import java.io.*;
 import java.util.*;
 
 /**
+ * This class implements IWikipediaPathFinder.
+ * Conceptually, it splits the Wikipedia connectivity graph in two subgraphs.
+ * The 'core' are all the nodes that are interconnected,
+ * the 'frontier' are those nodes that contain only links to the core.
+ * By splitting the vertices like this, finding a route can be reduced to
+ * a two-step process.
+ * First finding a way to go from the frontier to the core (linear in the
+ * number of nodes in the code), and second, finding a path within the core
+ * (at most quadratic in the number of vertices in the core).
+ * Typically, the core is about 100 times smaller than the frontier. So this
+ * algorithm really saves on useless calculations.
+ * Further optimization includes calculating the eigenvalues of all vertices in
+ * the core. And using those to break ties in Dijkstra's algorithm.
+ * By doing so, we ensure that paths with highly connected vertices are
+ * considered first. Thus guaranteeing minimum lookup time.
  * Created by joris on 1/27/18.
  */
 public class AdvancedDijkstraWikipediaPathFinder implements IWikipediaPathFinder {
 
     private static Set<Integer> frontier = buildFrontier();
     private static Set<Integer> core = buildCore();
-    private static Map<Integer, Double> priorities = eigenvalues();
+    private static Map<Integer, Double> priorities = new HashMap<>();
+
+    public AdvancedDijkstraWikipediaPathFinder()
+    {
+        if(priorities.isEmpty())
+            load();
+        double loadRatio = (double) priorities.size() / (double) core.size();
+        if(loadRatio < 0.75) {
+            priorities = calculateEigenvalues();
+            store();
+        }
+    }
 
     @Override
-    public String[] find(String start, String end) {
-        if(!WikipediaCache.get().has(start) || !WikipediaCache.get().has(end))
+    public String[] find(String start, String goal) {
+        if(!WikipediaCache.get().has(start) || !WikipediaCache.get().has(goal))
             return new String[]{};
 
         int startId = WikipediaCache.get().lookup(start);
-        int endId = WikipediaCache.get().lookup(end);
+        int endId = WikipediaCache.get().lookup(goal);
 
         List<Integer> path = searchCore(startId, goToCore(endId));
         if(path.isEmpty())
@@ -41,6 +68,12 @@ public class AdvancedDijkstraWikipediaPathFinder implements IWikipediaPathFinder
         return false;
     }
 
+    /**
+     * Search for a path within the core articles
+     * @param startId the ID of the starting vertex
+     * @param endIds the ID of the goal vertex
+     * @return
+     */
     private List<Integer> searchCore(int startId, Set<Integer> endIds)
     {
         Map<Integer, Integer> distance = new HashMap<>();
@@ -124,6 +157,12 @@ public class AdvancedDijkstraWikipediaPathFinder implements IWikipediaPathFinder
         return new ArrayList<>();
     }
 
+    /**
+     * Get the eigenvalue of a given article, or a sensible default value
+     * if the eigenvalue of the given article is not calculated yet.
+     * @param id the ID of the article
+     * @return
+     */
     private double priority(int id)
     {
         if(priorities.containsKey(id))
@@ -131,6 +170,12 @@ public class AdvancedDijkstraWikipediaPathFinder implements IWikipediaPathFinder
         return 0.75;
     }
 
+    /**
+     * Find all possible articles from the core that link to a given
+     * article in the frontier.
+     * @param articleId the ID of the article in the frontier
+     * @return
+     */
     private Set<Integer> goToCore(int articleId)
     {
         if(core.contains(articleId))
@@ -147,7 +192,11 @@ public class AdvancedDijkstraWikipediaPathFinder implements IWikipediaPathFinder
         }
     }
 
-    private static Map<Integer, Double> eigenvalues()
+    /**
+     * Calculate the eigenvalues of the articles in the core
+     * @return
+     */
+    private static Map<Integer, Double> calculateEigenvalues()
     {
         Map<Integer, Double> tmp0 = new HashMap<>();
         Map<Integer, Double> tmp1 = new HashMap<>();
@@ -180,6 +229,10 @@ public class AdvancedDijkstraWikipediaPathFinder implements IWikipediaPathFinder
         return tmp0;
     }
 
+    /**
+     * Calculate the frontier subgraph
+     * @return
+     */
     private static final Set<Integer> buildFrontier()
     {
         Set<Integer> frontier = new HashSet<>();
@@ -194,6 +247,10 @@ public class AdvancedDijkstraWikipediaPathFinder implements IWikipediaPathFinder
         return frontier;
     }
 
+    /**
+     * Calculate the core subgraph
+     * @return
+     */
     private static final Set<Integer> buildCore()
     {
         Set<Integer> core = new HashSet<>();
@@ -208,4 +265,66 @@ public class AdvancedDijkstraWikipediaPathFinder implements IWikipediaPathFinder
         return core;
     }
 
+    /**
+     * Load the externally saved eigenvalues for the core subgraph
+     * @return
+     */
+    public boolean load()
+    {
+        try {
+            _load();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Load the externally saved eigenvalues for the core subgraph
+     * @throws IOException
+     */
+    private void _load() throws IOException
+    {
+        File in = new File(System.getProperty("user.home"), this.getClass().getSimpleName() + ".bin");
+        if(!in.exists())
+            return;
+
+        BufferedReader sc = new BufferedReader(new FileReader(in));
+        while(sc.ready())
+        {
+            String[] line = sc.readLine().split("\t");
+            priorities.put(Integer.parseInt(line[0]), Double.parseDouble(line[1]));
+        }
+        sc.close();
+    }
+
+    /**
+     * Store the eigenvalues for the core subgraph
+     * @return
+     */
+    public boolean store()
+    {
+        try {
+            _store();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Store the eigenvalues for the core subgraph
+     * @throws IOException
+     */
+    private void _store() throws IOException
+    {
+        File out = new File(System.getProperty("user.home"), this.getClass().getSimpleName() + ".bin");
+        FileWriter fileWriter = new FileWriter(out);
+        for(Map.Entry<Integer,Double> e : priorities.entrySet())
+            fileWriter.write(e.getKey() + "\t" + e.getValue() + "\n");
+        fileWriter.flush();
+        fileWriter.close();
+    }
 }

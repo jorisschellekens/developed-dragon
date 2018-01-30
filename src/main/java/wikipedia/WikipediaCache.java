@@ -10,16 +10,24 @@ import java.net.URL;
 import java.util.*;
 
 /**
+ * This class represents a linkage between the program
+ * and Wikipedia. This class avoids making too many calls to
+ * Wikipedia. It stores the articles and links between them.
  * Created by joris on 1/26/18.
  */
 public class WikipediaCache {
 
+    // singleton pattern
     private static final WikipediaCache self = new WikipediaCache();
 
+    // articles are internally represented as integers
     private Map<Integer, String> articleIds = new HashMap<>();
     private Map<String, Integer> invArticleIds = new HashMap<>();
-    private Map<Integer, Set<Integer>> cache = new HashMap<>();
 
+    // map from article ID to IDs of articles linked
+    private Map<Integer, Set<Integer>> linkage = new HashMap<>();
+
+    // parameters for auto-saving the cache
     private int nofChanges = 0;
     private int nofChangesBeforeSave = 5000;
 
@@ -31,6 +39,13 @@ public class WikipediaCache {
         return self;
     }
 
+    /**
+     * Return the ID of an article,
+     * or creates the ID if the given key is not yet
+     * present in the ID table(s).
+     * @param article
+     * @return
+     */
     private int createOrLookup(String article) {
         if (invArticleIds.containsKey(article))
             return invArticleIds.get(article);
@@ -42,53 +57,100 @@ public class WikipediaCache {
         }
     }
 
+    /**
+     * Register a link between a given start article
+     * and target article
+     * @param from start article
+     * @param to target article
+     */
     private void addLink(String from, String to) {
         int fromId = createOrLookup(from);
         int toId = createOrLookup(to);
-        if (!cache.containsKey(fromId))
-            cache.put(fromId, new HashSet<Integer>());
-        cache.get(fromId).add(toId);
+        if (!linkage.containsKey(fromId))
+            linkage.put(fromId, new HashSet<Integer>());
+        linkage.get(fromId).add(toId);
         nofChanges++;
         if (nofChanges % nofChangesBeforeSave == 0) {
             store();
         }
     }
 
+    /**
+     * Return the ID corresponding to a given article title
+     * @param article
+     * @return
+     */
     public int lookup(String article)
     {
         return invArticleIds.get(article);
     }
 
+    /**
+     * Return the article title corresponding to a given article ID
+     * @param articleId
+     * @return
+     */
     public String lookup(int articleId)
     {
         return articleIds.get(articleId);
     }
 
+    /**
+     * Return true iff the cache currently contains the given article
+     * @param article
+     * @return
+     */
     public boolean has(String article) {
         return invArticleIds.containsKey(article);
     }
 
+    /**
+     * Return true iff the cache currently contains the given article
+     * @param articleId
+     * @return
+     */
     public boolean has(int articleId) {
         return articleIds.containsKey(articleId);
     }
 
+    /**
+     * Return all articles currently contained in the cache
+     * @return
+     */
     public Set<String> articles()
     {
         return invArticleIds.keySet();
     }
 
+    /**
+     * Get all outgoing links from a given article ID
+     * @param articleId
+     * @return
+     */
     public Set<Integer> outgoing(int articleId)
     {
-        return cache.get(articleId);
+        return linkage.get(articleId);
     }
 
+    /**
+     * Get all outgoing links from a given article title
+     * @param article
+     * @return
+     */
     public Set<Integer> outgoing(String article)
     {
-        if(!has(article) || !cache.containsKey(invArticleIds.get(article)))
+        if(!has(article) || !linkage.containsKey(invArticleIds.get(article)))
             onlineLookup(article);
         return outgoing(invArticleIds.get(article));
     }
 
+    /**
+     * Perform live lookup of outgoing links if the article
+     * has not been cached yet.
+     * This method also updates the 'nofChanges' count.
+     * Which in turn might trigger an auto-save.
+     * @param article
+     */
     private void onlineLookup(String article)
     {
         String url = "https://en.wikipedia.org/wiki/" + article;
@@ -137,7 +199,7 @@ public class WikipediaCache {
         {
             fileWriter.write(en.getKey() + "\t" + en.getValue() + "\n");
         }
-        for(Map.Entry<Integer, Set<Integer>> en : cache.entrySet())
+        for(Map.Entry<Integer, Set<Integer>> en : linkage.entrySet())
         {
             fileWriter.write(en.getKey() + "\t");
             for(Integer toId : en.getValue())
@@ -184,7 +246,7 @@ public class WikipediaCache {
             Set<Integer> toIds = new HashSet<>();
             for(int i=1;i<line.length;i++)
                 toIds.add(Integer.parseInt(line[i]));
-            cache.put(articleId, toIds);
+            linkage.put(articleId, toIds);
 
         }
         sc.close();
