@@ -154,10 +154,10 @@ public class WikipediaCache {
     private void onlineLookup(String article)
     {
         String url = "https://en.wikipedia.org/wiki/" + article;
-        Set<String> tmp = new HashSet<>();
         try {
             Document htmlDoc = Jsoup.parse(new URL(url), 5000);
-            for(Element e : htmlDoc.select("a"))
+            Element pageElement = htmlDoc.select("div#bodyContent").first();
+            for(Element e : pageElement.select("a"))
             {
                 if(e.parent().nodeName().equals("cite"))
                     continue;
