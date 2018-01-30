@@ -54,8 +54,9 @@ FROM 'Michael_Jackson' TO 'Dolphin'
 I tested the performance by measuring executing of AdvancedDijkstraPathFinder for 32 randomly selected pairs of Wikipedia articles. The output can be summarized as follows:
 
 ````
- success rate : 1.0     
- max          : 1379 ms 
- min          : 6 ms    
- avg          : 206 ms  
+load time    : 3032 ms
+success rate : 0.9765625
+max          : 3891 ms
+min          : 3 ms
+avg          : 285 ms
 ````
