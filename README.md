@@ -51,7 +51,7 @@ FROM 'Michael_Jackson' TO 'Dolphin'
 
 ## performance
 
-I tested the performance by measuring executing of AdvancedDijkstraPathFinder for 32 randomly selected pairs of Wikipedia articles. The output can be summarized as follows:
+I tested the performance by measuring executing of AdvancedDijkstraPathFinder for 1000 randomly selected pairs of Wikipedia articles. The output can be summarized as follows:
 
 ````
 load time    : 3032 ms
@@ -59,4 +59,14 @@ success rate : 0.9765625
 max          : 3891 ms
 min          : 3 ms
 avg          : 285 ms
+````
+
+I ran the similar tests counting the number of clicks every path took. For counting clicks, I included the start and goal page. So the above example session demonstrates a path of 4 clicks.
+
+````
+load time    : 2027 ms
+success rate : 0.973
+max          : 6 clicks
+min          : 3 clicks
+avg          : 4.0 clicks
 ````
