@@ -10,11 +10,17 @@ public class BuildCacheTest {
     @Test
     public void test()
     {
-        String[] coreArticles = {"United_States","World_War_II", "Biology","Language"};
+        String[] coreArticles = {"United_States","World_War_II", "Biology","Language", "Puppy", "BDSM", "IText"};
 
         for(String article : coreArticles)
         {
+            System.out.println("====================================================");
+            System.out.println(article);
+            System.out.println("====================================================");
             new DepthFirstWikipediaMiner().start(article, 2);
         }
+
+        // explicit store
+        WikipediaCache.get().store();
     }
 }

@@ -144,6 +144,24 @@ public class WikipediaCache {
         return outgoing(invArticleIds.get(article));
     }
 
+    private boolean hasParent(Element e, String nodeName, String nodeClass, String nodeID)
+    {
+        Element tmp = e;
+        while(tmp != null)
+        {
+            tmp = tmp.parent();
+            if(tmp == null)
+                break;
+            if(nodeName != null && tmp.nodeName().equals(nodeName))
+                return true;
+            if(nodeClass != null && Arrays.asList(tmp.className().split(" ")).contains(nodeClass))
+                return true;
+            if(nodeID != null && tmp.id().equals(nodeID))
+                return true;
+        }
+        return false;
+    }
+
     /**
      * Perform live lookup of outgoing links if the article
      * has not been cached yet.
@@ -159,7 +177,11 @@ public class WikipediaCache {
             Element pageElement = htmlDoc.select("div#bodyContent").first();
             for(Element e : pageElement.select("a"))
             {
-                if(e.parent().nodeName().equals("cite"))
+                if(hasParent(e, "cite", null, null))
+                    continue;
+                if(hasParent(e, null, "references", null))
+                    continue;
+                if(hasParent(e, null, "refbegin", null))
                     continue;
                 String href = e.attr("href");
                 if(href.startsWith("/wiki/") && !e.text().isEmpty())
@@ -169,7 +191,7 @@ public class WikipediaCache {
                             link.contains("Template:") || link.contains("Portal:") ||
                             link.contains("Talk:") || link.contains("Help:") ||
                             link.contains("Template_talk:") || link.contains("File:") ||
-                            link.contains("Book:"))
+                            link.contains("Book:") || link.contains("Wikipedia:"))
                         continue;
                     addLink(article, link);
                 }
