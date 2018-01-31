@@ -10,7 +10,7 @@ public class BuildCacheTest {
     @Test
     public void test()
     {
-        String[] coreArticles = {"United_States","World_War_II", "Biology","Language", "Puppy", "BDSM", "IText"};
+        String[] coreArticles = {"United_States","World_War_II", "Biology","Language", "Puppy", "IText"};
 
         for(String article : coreArticles)
         {
