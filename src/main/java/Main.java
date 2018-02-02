@@ -1,5 +1,5 @@
 import miner.DepthFirstWikipediaMiner;
-import path.AdvancedDijkstraWikipediaPathFinder;
+import path.DijkstraWikipediaPathFinder001;
 import wikipedia.WikipediaCache;
 
 import java.util.Scanner;
@@ -59,7 +59,7 @@ public class Main {
 
 
             // display path
-            String[] path = new AdvancedDijkstraWikipediaPathFinder().find(start, goal);
+            String[] path = new DijkstraWikipediaPathFinder001().find(start, goal);
             for(int i=0;i<path.length;i++)
             {
                 System.out.println(i + "\t" + path[i]);
