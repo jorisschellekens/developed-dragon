@@ -70,3 +70,26 @@ max          : 6 clicks
 min          : 3 clicks
 avg          : 4.0 clicks
 ````
+
+## decimation
+
+In digital signal processing, decimation is the process of reducing the sampling rate of a signal. The term downsampling usually refers to one step of the process, but sometimes the terms are used interchangeably. Complementary to upsampling, which increases sampling rate, decimation is a specific case of sample rate conversion in a multi-rate digital signal processing system.
+When decimation is performed on a sequence of samples of a signal or other continuous function, it produces an approximation of the sequence that would have been obtained by sampling the signal at a lower rate (or density, as in the case of a photograph). 
+
+I implemented a version of `IWikipediaPathFinder` that purposefully removes nodes from its graph with probability in correspondance to `1.0 - eigenvalue`. By doing so the graph becomes easier to traverse, but performance suffers.
+
+````
+del      success rate
+0.1	    0.905
+0.2	    0.855
+0.3	    0.775
+0.4	    0.675
+0.5	    0.675
+0.6	    0.585
+0.7	    0.51
+0.75	  0.53
+0.8	    0.47
+0.85	  0.43
+````
+
+Average click count (as well as minimum and maximum click count) did not vary.
