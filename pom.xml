@@ -47,23 +47,11 @@
             <version>1.10.3</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/net.java.dev.jna/jna -->
-        <!--
         <dependency>
-            <groupId>net.java.dev.jna</groupId>
-            <artifactId>jna</artifactId>
-            <version>4.4.0</version>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>3.7.1</version>
         </dependency>
-        -->
-
-        <!-- https://mvnrepository.com/artifact/net.sourceforge.tess4j/tess4j -->
-        <!--
-        <dependency>
-            <groupId>net.sourceforge.tess4j</groupId>
-            <artifactId>tess4j</artifactId>
-            <version>3.3.1</version>
-        </dependency>
-        -->
 
         <!-- https://mvnrepository.com/artifact/org.testng/testng -->
         <dependency>
