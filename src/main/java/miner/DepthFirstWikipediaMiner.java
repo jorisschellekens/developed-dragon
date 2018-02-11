@@ -26,11 +26,11 @@ public class DepthFirstWikipediaMiner {
             return;
         if(mined.contains(article))
             return;
-        if(!WikipediaCache.get().has(article))
-            return;
 
         System.out.println(depth + "/" + maxDepth + "\t" + article);
         Set<Integer> out = WikipediaCache.get().outgoing(article);
+        if(out == null)
+            return;
         mined.add(article);
 
         for(int toId : out)

@@ -48,6 +48,9 @@ public class DijkstraWikipediaPathFinder001 implements IWikipediaPathFinder {
         int startId = WikipediaCache.get().lookup(start);
         int endId = WikipediaCache.get().lookup(goal);
 
+        if(WikipediaCache.get().outgoing(startId) != null && WikipediaCache.get().outgoing(startId).contains(endId))
+            return new String[]{start, goal};
+
         List<Integer> path = searchCore(startId, goToCore(endId));
         if(path.isEmpty())
             return new String[]{};
@@ -89,6 +92,7 @@ public class DijkstraWikipediaPathFinder001 implements IWikipediaPathFinder {
             frontier.remove(current);
             core.add(current);
         }
+
         while(!endIds.contains(current) && !hasAny(previous.keySet(), endIds))
         {
             if(!WikipediaCache.get().has(current))

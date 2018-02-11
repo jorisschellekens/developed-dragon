@@ -29,7 +29,7 @@ public class WikipediaCache {
 
     // parameters for auto-saving the cache
     private int nofChanges = 0;
-    private int nofChangesBeforeSave = 5000;
+    private int nofChangesBeforeSave = 32768;
 
     private WikipediaCache() {
         load();
@@ -63,12 +63,35 @@ public class WikipediaCache {
      * @param from start article
      * @param to target article
      */
-    private void addLink(String from, String to) {
+    public void addLink(String from, String to) {
+        if(from.isEmpty() || to.isEmpty())
+            return;
         int fromId = createOrLookup(from);
         int toId = createOrLookup(to);
         if (!linkage.containsKey(fromId))
             linkage.put(fromId, new HashSet<Integer>());
         linkage.get(fromId).add(toId);
+        nofChanges++;
+        if (nofChanges % nofChangesBeforeSave == 0) {
+            store();
+        }
+    }
+
+    /**
+     * Remove a link between a given start article
+     * and target article
+     * @param from start article
+     * @param to target article
+     */
+    public void removeLink(String from, String to)
+    {
+        if(from.isEmpty() || to.isEmpty())
+            return;
+        int fromId = createOrLookup(from);
+        int toId = createOrLookup(to);
+        if (!linkage.containsKey(fromId))
+            return;
+        linkage.get(fromId).remove(toId);
         nofChanges++;
         if (nofChanges % nofChangesBeforeSave == 0) {
             store();
@@ -139,6 +162,8 @@ public class WikipediaCache {
      */
     public Set<Integer> outgoing(String article)
     {
+        if(article.isEmpty())
+            return java.util.Collections.EMPTY_SET;
         if(!has(article) || !linkage.containsKey(invArticleIds.get(article)))
             onlineLookup(article);
         return outgoing(invArticleIds.get(article));
@@ -191,15 +216,13 @@ public class WikipediaCache {
                             link.contains("Template:") || link.contains("Portal:") ||
                             link.contains("Talk:") || link.contains("Help:") ||
                             link.contains("Template_talk:") || link.contains("File:") ||
-                            link.contains("Book:") || link.contains("Wikipedia:"))
+                            link.contains("Book:") || link.contains("Wikipedia:") ||
+                            link.contains("Main_Page"))
                         continue;
                     addLink(article, link);
                 }
             }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 

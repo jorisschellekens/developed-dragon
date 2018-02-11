@@ -35,24 +35,6 @@ public class PlaySessionTest {
         return true;
     }
 
-    private boolean login(String username, String password)
-    {
-        // show page
-        showMainPage();
-        try {
-            DRIVER.findElement(By.cssSelector("a#accounts_login")).click();
-            Thread.sleep(2000);
-
-            // fill in username and password
-            DRIVER.findElement(By.cssSelector("input#id_username")).sendKeys(username);
-            DRIVER.findElement(By.cssSelector("input#id_password")).sendKeys(password);
-
-            // return
-            return true;
-        }catch (Exception ex){return false;}
-    }
-
-
     private boolean initScreenVisible()
     {
         showMainPage();
@@ -157,12 +139,6 @@ public class PlaySessionTest {
     }
 
     @Test
-    public void login()
-    {
-        login("JorisSchellekens","");
-    }
-
-    @Test
     public void singleGame()
     {
         // wait for initial screen
@@ -197,7 +173,8 @@ public class PlaySessionTest {
     @Test
     public void multipleGames()
     {
-        for(int i=0;i<10;i++)
+        for(int i=0;i<10;i++) {
             singleGame();
+        }
     }
 }

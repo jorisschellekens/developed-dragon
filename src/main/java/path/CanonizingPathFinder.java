@@ -4,6 +4,11 @@ import miner.DepthFirstWikipediaMiner;
 import wikipedia.WikipediaCache;
 
 /**
+ * This class adds canonization to the IWikipediaPathFinder
+ * Rather than having to add this logic to every implementation,
+ * client code can wrap expect to be called only with valid Wikipedia articles.
+ * Even though the wrapper enables end-users to call the IWikipediaPathFinder with
+ * invalid article titles such as "Michael Jackson" rather than "Michael_Jackson".
  * Created by joris on 2/7/18.
  */
 public class CanonizingPathFinder implements IWikipediaPathFinder {

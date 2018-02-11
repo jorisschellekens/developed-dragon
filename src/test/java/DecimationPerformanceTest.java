@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Random;
 
 /**
+ * This test prints out the performance (success ratio) of
+ * finding a path with fixed decimation ratios.
  * Created by joris on 2/2/18.
  */
 public class DecimationPerformanceTest {

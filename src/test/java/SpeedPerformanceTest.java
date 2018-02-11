@@ -1,7 +1,5 @@
 import org.testng.annotations.Test;
-import path.CompositeWikipediaPathFinder;
 import path.DijkstraWikipediaPathFinder001;
-import path.DijkstraWikipediaPathFinder002;
 import path.IWikipediaPathFinder;
 import wikipedia.WikipediaCache;
 
@@ -15,8 +13,13 @@ import java.util.Random;
 public class SpeedPerformanceTest {
 
     private static Random RANDOM = new java.util.Random(System.currentTimeMillis());
-    private int N = 100;
+    private int N = 1000;
 
+    public static void main(String[] args)
+    {
+        new SpeedPerformanceTest().testPerformance();       
+    }
+    
     @Test
     public void testPerformance()
     {

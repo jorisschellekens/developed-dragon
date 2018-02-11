@@ -9,6 +9,12 @@ package path;
  */
 public interface IWikipediaPathFinder {
 
+    /**
+     * Find a path between a given start and goal article
+     * @param start the title of the start article
+     * @param goal the title of the goal article
+     * @return
+     */
     String[] find(String start, String goal);
 
 }

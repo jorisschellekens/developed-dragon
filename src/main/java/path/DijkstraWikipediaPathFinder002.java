@@ -21,6 +21,9 @@ import java.util.*;
  * the core. And using those to break ties in Dijkstra's algorithm.
  * By doing so, we ensure that paths with highly connected vertices are
  * considered first. Thus guaranteeing minimum lookup time.
+ * Furthermore, this implementation adds the concept of decimation.
+ * It essentially throws away nodes in the core with probability inversely
+ * proportional to their respective priorities.
  * Created by joris on 1/27/18.
  */
 public class DijkstraWikipediaPathFinder002 implements IWikipediaPathFinder {
