@@ -6,6 +6,7 @@ import org.testng.annotations.Test;
 import path.CanonizingPathFinder;
 import path.DijkstraWikipediaPathFinder001;
 import path.IWikipediaPathFinder;
+import wikipedia.WikipediaCache;
 
 import java.io.File;
 
@@ -18,6 +19,9 @@ public class PlayGroupSessionTest {
     private static File DRIVER_FILE = new File(System.getProperty("user.home"), "Downloads/chromedriver");
     private static WebDriver DRIVER = initDriver();
     private static IWikipediaPathFinder PATHFINDER = new CanonizingPathFinder(new DijkstraWikipediaPathFinder001());
+
+    private static boolean UPDATE_CACHE_WHILE_PLAYING = true;
+    private int MAX_NOF_RETRY = 5;
 
     private static final int PUBLIC_GROUP_CODE = 294277;
     private static final String MY_NAME = "JorisSchellekens";
@@ -88,7 +92,7 @@ public class PlayGroupSessionTest {
         }
     }
 
-    private boolean clickLink(String goal)
+    private boolean clickLink(String current, String goal)
     {
         try {
             for (WebElement element : DRIVER.findElements(By.tagName("a"))) {
@@ -108,10 +112,11 @@ public class PlayGroupSessionTest {
         return false;
     }
 
-    private boolean clickPath(String[] path)
+    private boolean clickPath(String[] path, int retryNr)
     {
         boolean out = true;
-        for(int i=0;i<path.length;i++)
+        int i = 0;
+        for(i=0;i<path.length;i++)
         {
             // exception for entering game
             if(i == 0)
@@ -122,10 +127,19 @@ public class PlayGroupSessionTest {
                 }catch (Exception ex){}
             }
             else {
-                out &= clickLink(path[i]);
+                out &= clickLink(path[i-1], path[i]);
             }
             if(!out)
                 break;
+        }
+        if(!out && UPDATE_CACHE_WHILE_PLAYING && retryNr < MAX_NOF_RETRY)
+        {
+            System.out.println("Calculating new path");
+            WikipediaCache.get().removeLink(path[i-1], path[i]);
+            path = PATHFINDER.find(path[i-1], path[path.length-1]);
+            for(int j=0;j<path.length;j++)
+                System.out.println(j + "\t" + path[j]);
+            return clickPath(path, retryNr+1);
         }
         return out;
     }
@@ -172,7 +186,7 @@ public class PlayGroupSessionTest {
             System.out.println(i + "\t" + path[i]);
 
         // click the path
-        boolean won = clickPath(path);
+        boolean won = clickPath(path, 0);
 
         // wait for next game
         if(!won) {
@@ -188,7 +202,7 @@ public class PlayGroupSessionTest {
     @Test
     public void multipleSessions()
     {
-        multipleSessions(10);
+        multipleSessions(1000);
     }
 
     public void multipleSessions(int k)
@@ -215,7 +229,7 @@ public class PlayGroupSessionTest {
             if (path == null || path.length == 0) {
                 System.out.println("No valid path found. Abandon game.");
                 waitForNewGame(startAndGoal);
-                return;
+                continue;
             }
 
             // print path
@@ -223,7 +237,7 @@ public class PlayGroupSessionTest {
                 System.out.println(i + "\t" + path[i]);
 
             // click the path
-            boolean won = clickPath(path);
+            boolean won = clickPath(path, 0);
 
             // wait for next game
             if (!won) {
