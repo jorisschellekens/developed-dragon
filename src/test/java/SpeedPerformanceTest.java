@@ -1,6 +1,8 @@
 import org.testng.annotations.Test;
+import path.meta.CanonizingPathFinder;
 import path.DijkstraWikipediaPathFinder001;
 import path.IWikipediaPathFinder;
+import path.meta.DownloadingPathFinder;
 import wikipedia.WikipediaCache;
 
 import java.util.ArrayList;
@@ -13,7 +15,7 @@ import java.util.Random;
 public class SpeedPerformanceTest {
 
     private static Random RANDOM = new java.util.Random(System.currentTimeMillis());
-    private int N = 1000;
+    private int N = 10;
 
     public static void main(String[] args)
     {
@@ -25,7 +27,7 @@ public class SpeedPerformanceTest {
     {
         // create IWikipediaPathFinder
         long initialLoadTime = System.currentTimeMillis();
-        IWikipediaPathFinder pathFinder = new DijkstraWikipediaPathFinder001();
+        IWikipediaPathFinder pathFinder = new DownloadingPathFinder(new DijkstraWikipediaPathFinder001());
         initialLoadTime = System.currentTimeMillis() - initialLoadTime;
 
         // perform N tests

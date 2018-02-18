@@ -1,5 +1,6 @@
 package path;
 
+import graph.AbstractDijkstraAlgorithm;
 import wikipedia.WikipediaCache;
 
 import java.io.*;
@@ -18,15 +19,14 @@ import java.util.*;
  * Typically, the core is about 100 times smaller than the frontier. So this
  * algorithm really saves on useless calculations.
  * Further optimization includes calculating the eigenvalues of all vertices in
- * the core. And using those to break ties in Dijkstra's algorithm.
+ * the core. And using those to break ties in AbstractDijkstraAlgorithm's algorithm.
  * By doing so, we ensure that paths with highly connected vertices are
  * considered first. Thus guaranteeing minimum lookup time.
  * Created by joris on 1/27/18.
  */
 public class DijkstraWikipediaPathFinder001 implements IWikipediaPathFinder {
 
-    private static Set<Integer> frontier = buildFrontier();
-    private static Set<Integer> core = buildCore();
+    protected static Map<Integer, Set<Integer>> core = buildCore();
     private static Map<Integer, Double> priorities = new HashMap<>();
 
     public DijkstraWikipediaPathFinder001()
@@ -45,120 +45,48 @@ public class DijkstraWikipediaPathFinder001 implements IWikipediaPathFinder {
         if(!WikipediaCache.get().has(start) || !WikipediaCache.get().has(goal))
             return new String[]{};
 
-        int startId = WikipediaCache.get().lookup(start);
+        final int startId = WikipediaCache.get().lookup(start);
         int endId = WikipediaCache.get().lookup(goal);
 
         if(WikipediaCache.get().outgoing(startId) != null && WikipediaCache.get().outgoing(startId).contains(endId))
             return new String[]{start, goal};
 
-        List<Integer> path = searchCore(startId, goToCore(endId));
-        if(path.isEmpty())
+        if(WikipediaCache.get().outgoing(startId) == null || WikipediaCache.get().outgoing(startId).isEmpty())
             return new String[]{};
-        if(path.get(path.size() -1) != endId)
-            path.add(endId);
 
-        String[] out = new String[path.size()];
-        for(int i=0;i<path.size();i++)
-            out[i] = WikipediaCache.get().lookup(path.get(i));
-        return out;
-    }
+        // call AbstractDijkstraAlgorithm
+        final Collection<Integer> goals = goToCore(endId);
+        if(!goals.contains(endId))
+            goals.add(endId);
 
-    private boolean hasAny(Set<Integer> s0, Set<Integer> s1)
-    {
-        for(Integer i1 : s1)
-            if(s0.contains(i1))
-                return true;
-        return false;
-    }
+        int[] pathA = new AbstractDijkstraAlgorithm() {
+            @Override
+            public int tieBreaker(int ID0, int ID1){return priority(ID0) > priority(ID1) ? ID0 : ID1;}
+            @Override
+            public int cost(int startID, int goalID) { return 1; }
+            @Override
+            public Collection<Integer> nextHop(int ID) { return ID == startId ? WikipediaCache.get().outgoing(ID) : core.get(ID);}
+            @Override
+            public boolean has(int ID) { return ID == startId || core.containsKey(ID) || goals.contains(ID);}
+        }.path(startId, goToCore(endId));
 
-    /**
-     * Search for a path within the core articles
-     * @param startId the ID of the starting vertex
-     * @param endIds the ID of the goal vertex
-     * @return
-     */
-    private List<Integer> searchCore(int startId, Set<Integer> endIds)
-    {
-        Map<Integer, Integer> distance = new HashMap<>();
-        Map<Integer, Integer> previous = new HashMap<>();
-        Set<Integer> visited = new HashSet<>();
+        // exception
+        if(pathA == null || pathA.length == 0)
+            return new String[]{};
 
-        distance.put(startId, 0);
-
-
-        int current = startId;
-        if(!core.contains(current)) {
-            WikipediaCache.get().outgoing(WikipediaCache.get().lookup(current));
-            frontier.remove(current);
-            core.add(current);
-        }
-
-        while(!endIds.contains(current) && !hasAny(previous.keySet(), endIds))
+        int[] pathB = pathA;
+        if(pathA[pathA.length-1] != endId)
         {
-            if(!WikipediaCache.get().has(current))
-                continue;
-            if(WikipediaCache.get().outgoing(current) == null)
-                continue;
-            if(frontier.contains(current))
-                continue;
-
-            // update distances
-            visited.add(current);
-            for(int out : WikipediaCache.get().outgoing(current))
-            {
-                if(frontier.contains(out))
-                    continue;
-                if(!distance.containsKey(out)){
-                    distance.put(out, distance.get(current) + 1);
-                    previous.put(out, current);
-                }
-                else
-                {
-                    int d1 = distance.get(out);
-                    int d2 = distance.get(current) + 1;
-                    if(d2 < d1)
-                    {
-                        distance.put(out, d2);
-                        previous.put(out, current);
-                    }
-                }
-            }
-
-            // find unvisited node with smallest distance
-            int next = -1;
-            for(Map.Entry<Integer, Integer> e : distance.entrySet())
-            {
-                if(visited.contains(e.getKey()))
-                    continue;
-                if(!WikipediaCache.get().has(e.getKey()))
-                    continue;
-                if(WikipediaCache.get().outgoing(e.getKey()) == null)
-                    continue;
-                if(next == -1 ||                                                                                    // best distance isn't known yet
-                        e.getValue() < distance.get(next) ||                                                        // distance is better
-                        (e.getValue() == distance.get(next) && priority(e.getKey()) > priority(next)))              // distance is equal, but eigenvalue is better
-                    next = e.getKey();
-            }
-            if(next == -1)
-                break;
-            current = next;
+            pathB = new int[pathA.length + 1];
+            for(int i=0;i<pathA.length;i++)
+                pathB[i] = pathA[i];
+            pathB[pathB.length-1] = endId;
         }
 
-        // build path
-        if(hasAny(previous.keySet(), endIds))
-        {
-            List<Integer> path = new ArrayList<>();
-
-            Set<Integer> matchingEndIds = new HashSet<>(previous.keySet());
-            matchingEndIds.retainAll(endIds);
-            path.add(matchingEndIds.iterator().next());
-
-            while(!path.get(0).equals(startId)) {
-                path.add(0, previous.get(path.get(0)));
-            }
-            return path;
-        }
-        return new ArrayList<>();
+        String[] pathC = new String[pathB.length];
+        for(int i=0;i<pathB.length;i++)
+            pathC[i] = WikipediaCache.get().lookup(pathB[i]);
+        return pathC;
     }
 
     /**
@@ -167,7 +95,7 @@ public class DijkstraWikipediaPathFinder001 implements IWikipediaPathFinder {
      * @param id the ID of the article
      * @return
      */
-    private double priority(int id)
+    protected double priority(int id)
     {
         if(priorities.containsKey(id))
             return priorities.get(id);
@@ -180,14 +108,14 @@ public class DijkstraWikipediaPathFinder001 implements IWikipediaPathFinder {
      * @param articleId the ID of the article in the frontier
      * @return
      */
-    private Set<Integer> goToCore(int articleId)
+    protected Set<Integer> goToCore(int articleId)
     {
-        if(core.contains(articleId))
+        if(core.containsKey(articleId))
             return java.util.Collections.singleton(articleId);
         else
         {
             Set<Integer> prevInCore = new HashSet<>();
-            for(int cId : core)
+            for(int cId : core.keySet())
             {
                 if(WikipediaCache.get().outgoing(cId).contains(articleId))
                     prevInCore.add(cId);
@@ -204,23 +132,23 @@ public class DijkstraWikipediaPathFinder001 implements IWikipediaPathFinder {
     {
         Map<Integer, Double> tmp0 = new HashMap<>();
         Map<Integer, Double> tmp1 = new HashMap<>();
-        for(int i : core)
+        for(int i : core.keySet())
         {
             tmp0.put(i, 1.0);
         }
         double alpha = 0.85;
         for(int iteration=0;iteration<16;iteration++) {
-            for (int i : core) {
+            for (int i : core.keySet()) {
                 double v = (tmp0.get(i) / WikipediaCache.get().outgoing(i).size()) * alpha;
                 for (int outId : WikipediaCache.get().outgoing(i)) {
-                    if(!core.contains(outId))
+                    if(!core.containsKey(outId))
                         continue;
                     if (!tmp1.containsKey(outId))
                         tmp1.put(outId, 0.0);
                     tmp1.put(outId, tmp1.get(outId) + v);
                 }
             }
-            for(int i : core)
+            for(int i : core.keySet())
             {
                 if(!tmp1.containsKey(i))
                     tmp1.put(i, 0.0);
@@ -255,18 +183,28 @@ public class DijkstraWikipediaPathFinder001 implements IWikipediaPathFinder {
      * Calculate the core subgraph
      * @return
      */
-    private static final Set<Integer> buildCore()
+    private static final Map<Integer, Set<Integer>> buildCore()
     {
-        Set<Integer> core = new HashSet<>();
+        Map<Integer, Set<Integer>> tmp = new HashMap<>();
         for(String article : WikipediaCache.get().articles())
         {
             int articleId = WikipediaCache.get().lookup(article);
             if(WikipediaCache.get().outgoing(articleId) !=  null)
             {
-                core.add(articleId);
+                tmp.put(articleId, new HashSet<Integer>());
             }
         }
-        return core;
+        for(int articleID : tmp.keySet())
+        {
+            Set<Integer> nextHops = new HashSet<>();
+            for(int nextHopID : WikipediaCache.get().outgoing(articleID))
+            {
+                if(tmp.containsKey(nextHopID))
+                    nextHops.add(nextHopID);
+            }
+            tmp.put(articleID, nextHops);
+        }
+        return tmp;
     }
 
     /**

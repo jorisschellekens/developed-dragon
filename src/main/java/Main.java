@@ -1,7 +1,5 @@
-import miner.DepthFirstWikipediaMiner;
-import path.CanonizingPathFinder;
+import path.meta.CanonizingPathFinder;
 import path.DijkstraWikipediaPathFinder001;
-import wikipedia.WikipediaCache;
 
 import java.util.Scanner;
 

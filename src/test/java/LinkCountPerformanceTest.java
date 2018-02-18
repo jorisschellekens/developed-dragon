@@ -1,8 +1,7 @@
 import org.testng.annotations.Test;
-import path.CompositeWikipediaPathFinder;
 import path.DijkstraWikipediaPathFinder001;
-import path.DijkstraWikipediaPathFinder002;
 import path.IWikipediaPathFinder;
+import path.meta.DownloadingPathFinder;
 import wikipedia.WikipediaCache;
 
 import java.util.ArrayList;
@@ -16,14 +15,14 @@ public class LinkCountPerformanceTest {
 
 
     private static Random RANDOM = new java.util.Random(System.currentTimeMillis());
-    private int N = 100;
+    private int N = 1000;
 
     @Test
     public void testPerformance()
     {
         // create IWikipediaPathFinder
         long initialLoadTime = System.currentTimeMillis();
-        IWikipediaPathFinder pathFinder = new DijkstraWikipediaPathFinder001();
+        IWikipediaPathFinder pathFinder = new DownloadingPathFinder(new DijkstraWikipediaPathFinder001());
         initialLoadTime = System.currentTimeMillis() - initialLoadTime;
 
         // perform N tests

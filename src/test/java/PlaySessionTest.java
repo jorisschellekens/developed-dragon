@@ -3,7 +3,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.annotations.Test;
-import path.CanonizingPathFinder;
+import path.meta.CanonizingPathFinder;
 import path.DijkstraWikipediaPathFinder001;
 import path.IWikipediaPathFinder;
 

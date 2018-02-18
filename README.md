@@ -64,10 +64,10 @@ avg          : 285 ms
 I ran the similar tests counting the number of clicks every path took. For counting clicks, I included the start and goal page. So the above example session demonstrates a path of 4 clicks.
 
 ````
-load time    : 2027 ms
-success rate : 0.973
-max          : 6 clicks
-min          : 3 clicks
+load time    : 2634 ms
+success rate : 0.977
+max          : 8 clicks
+min          : 2 clicks
 avg          : 4.0 clicks
 ````
 
@@ -87,9 +87,9 @@ del      success rate
 0.5	    0.675
 0.6	    0.585
 0.7	    0.51
-0.75	  0.53
+0.75	    0.53
 0.8	    0.47
-0.85	  0.43
+0.85	    0.43
 ````
 
 Average click count (as well as minimum and maximum click count) did not vary.

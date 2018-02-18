@@ -3,9 +3,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.annotations.Test;
-import path.CanonizingPathFinder;
+import path.meta.CanonizingPathFinder;
 import path.DijkstraWikipediaPathFinder001;
 import path.IWikipediaPathFinder;
+import path.meta.DownloadingPathFinder;
 import wikipedia.WikipediaCache;
 
 import java.io.File;
@@ -18,12 +19,13 @@ public class PlayGroupSessionTest {
 
     private static File DRIVER_FILE = new File(System.getProperty("user.home"), "Downloads/chromedriver");
     private static WebDriver DRIVER = initDriver();
-    private static IWikipediaPathFinder PATHFINDER = new CanonizingPathFinder(new DijkstraWikipediaPathFinder001());
+    private static IWikipediaPathFinder PATHFINDER = new CanonizingPathFinder(new DownloadingPathFinder(new DijkstraWikipediaPathFinder001()));
 
+    private static long WAIT_TIME = 5000;
     private static boolean UPDATE_CACHE_WHILE_PLAYING = true;
     private int MAX_NOF_RETRY = 5;
 
-    private static final int PUBLIC_GROUP_CODE = 294277;
+    private static final int PUBLIC_GROUP_CODE = 123456;
     private static final String MY_NAME = "JorisSchellekens";
 
     private static WebDriver initDriver() {
@@ -36,7 +38,7 @@ public class PlayGroupSessionTest {
     public void login() {
         DRIVER.get("https://groups.thewikigame.com/login?code=" + PUBLIC_GROUP_CODE);
         try {
-            Thread.sleep(2000);
+            Thread.sleep(WAIT_TIME);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -64,7 +66,7 @@ public class PlayGroupSessionTest {
         while(!initScreenVisible())
         {
             try{
-                Thread.sleep(2000);
+                Thread.sleep(WAIT_TIME);
             }catch (Exception ex){}
         }
     }
@@ -84,7 +86,7 @@ public class PlayGroupSessionTest {
         String[] tmp = scrapeStartAndGoal();
         while(tmp == null || (tmp[0].equals(startAndGoal[0]) && tmp[1].equals(startAndGoal[1]))) {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(WAIT_TIME);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -101,7 +103,7 @@ public class PlayGroupSessionTest {
                     continue;
                 if (href.endsWith("/wiki/" + goal)) {
                     element.click();
-                    Thread.sleep(2000);
+                    Thread.sleep(WAIT_TIME);
                     return true;
                 }
             }
@@ -123,7 +125,7 @@ public class PlayGroupSessionTest {
             {
                 try {
                     DRIVER.findElement(By.cssSelector("button.h1")).click();
-                    Thread.sleep(2000);
+                    Thread.sleep(WAIT_TIME);
                 }catch (Exception ex){}
             }
             else {
@@ -152,7 +154,7 @@ public class PlayGroupSessionTest {
             if (element != null)
             {
                 element.click();
-                Thread.sleep(2000);
+                Thread.sleep(WAIT_TIME);
             }
         }catch (Exception ex){}
     }

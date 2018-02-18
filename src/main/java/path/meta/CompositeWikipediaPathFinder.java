@@ -1,4 +1,6 @@
-package path;
+package path.meta;
+
+import path.IWikipediaPathFinder;
 
 import java.util.ArrayList;
 import java.util.List;

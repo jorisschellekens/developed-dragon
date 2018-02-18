@@ -1,12 +1,13 @@
 package path;
 
+import graph.AbstractDijkstraAlgorithm;
 import wikipedia.WikipediaCache;
 
 import java.util.*;
 
 /**
  * This class provides a basic implementation of IWikipediaPathFinder
- * using Dijkstra's algorithm for minimal path construction.
+ * using AbstractDijkstraAlgorithm's algorithm for minimal path construction.
  * Created by joris on 1/26/18.
  */
 
@@ -20,80 +21,29 @@ public class DijkstraWikipediaPathFinder000 implements IWikipediaPathFinder {
         int startId = WikipediaCache.get().lookup(start);
         int endId = WikipediaCache.get().lookup(goal);
 
-        Map<Integer, Integer> distance = new HashMap<>();
-        Map<Integer, Integer> previous = new HashMap<>();
-        Set<Integer> visited = new HashSet<>();
+        // call AbstractDijkstraAlgorithm
+        int[] pathA = new AbstractDijkstraAlgorithm() {
+            @Override
+            public int tieBreaker(int ID0, int ID1){return ID1;}
+            @Override
+            public int cost(int startID, int goalID) { return 1; }
+            @Override
+            public Collection<Integer> nextHop(int ID) { return WikipediaCache.get().outgoing(ID);}
+            @Override
+            public boolean has(int ID) { return WikipediaCache.get().has(ID);}
+        }.path(startId, endId);
 
-        distance.put(startId, 0);
+        // exception
+        if(pathA.length == 0)
+            return new String[0];
 
+        // convert IDs to links
+        String[] pathB = new String[pathA.length];
+        for(int i=0;i<pathB.length;i++)
+            pathB[i] = WikipediaCache.get().lookup(pathA[i]);
 
-        int current = startId;
-        if(!WikipediaCache.get().has(current)) {
-            WikipediaCache.get().outgoing(current);
-            WikipediaCache.get().store();
-        }
-        while(current != endId && !previous.containsKey(endId))
-        {
-            if(!WikipediaCache.get().has(current))
-                continue;
-            if(WikipediaCache.get().outgoing(current) == null)
-                continue;
-
-            // update distances
-            visited.add(current);
-            for(int out : WikipediaCache.get().outgoing(current))
-            {
-                if(!distance.containsKey(out)){
-                    distance.put(out, distance.get(current) + 1);
-                    previous.put(out, current);
-                }
-                else
-                {
-                    int d1 = distance.get(out);
-                    int d2 = distance.get(current) + 1;
-                    if(d2 < d1)
-                    {
-                        distance.put(out, d2);
-                        previous.put(out, current);
-                    }
-                }
-            }
-
-            // find unvisited node with smallest distance
-            int next = -1;
-            for(Map.Entry<Integer, Integer> e : distance.entrySet())
-            {
-                if(visited.contains(e.getKey()))
-                    continue;
-                if(!WikipediaCache.get().has(e.getKey()))
-                    continue;
-                if(WikipediaCache.get().outgoing(e.getKey()) == null)
-                    continue;
-                if(next == -1 || e.getValue() < distance.get(next))
-                    next = e.getKey();
-            }
-            if(next == -1)
-                break;
-            current = next;
-
-        }
-
-        if(previous.containsKey(endId))
-        {
-            List<Integer> path = new ArrayList<>();
-            path.add(endId);
-
-            while(!path.get(0).equals(startId)) {
-                path.add(0, previous.get(path.get(0)));
-            }
-
-            String[] out = new String[path.size()];
-            for(int i=0;i<path.size();i++)
-                out[i] = WikipediaCache.get().lookup(path.get(i));
-            return out;
-        }
-
-        return new String[0];
+        // return
+        return pathB;
     }
 
 }

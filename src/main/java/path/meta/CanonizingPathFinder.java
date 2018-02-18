@@ -1,6 +1,7 @@
-package path;
+package path.meta;
 
 import miner.DepthFirstWikipediaMiner;
+import path.IWikipediaPathFinder;
 import wikipedia.WikipediaCache;
 
 /**
@@ -36,27 +37,11 @@ public class CanonizingPathFinder implements IWikipediaPathFinder {
     @Override
     public String[] find(String start, String goal) {
 
-
         // canonize start
         start = canonize(start);
 
         // canonize goal
         goal = canonize(goal);
-
-        // find goal if needed
-        if(!WikipediaCache.get().has(goal)) {
-            new DepthFirstWikipediaMiner().start(goal, 2);
-            WikipediaCache.get().store();
-            goal = canonize(goal);
-        }
-
-        // find start if needed
-        if(!WikipediaCache.get().has(start))
-        {
-            new DepthFirstWikipediaMiner().start(start, 2);
-            WikipediaCache.get().store();
-            start = canonize(start);
-        }
 
         String[] path = innerPathFinder.find(start, goal);
         if(path == null || path.length < 2)
