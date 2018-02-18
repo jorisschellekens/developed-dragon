@@ -98,6 +98,7 @@ public abstract class AbstractDijkstraAlgorithm {
 
             // find unvisited node with smallest distance
             Integer next = -1;
+            Integer nextHopDistance = Integer.MAX_VALUE;
             for(Map.Entry<Integer, Integer> e : distance.entrySet())
             {
                 int nextHop = e.getKey();
@@ -105,12 +106,15 @@ public abstract class AbstractDijkstraAlgorithm {
                     continue;
                 if(!has(nextHop))
                     continue;
-                if(nextHop(nextHop) == null || nextHop(nextHop).isEmpty())
+                if(nextHop(nextHop) == null)
                     continue;
-                if(next == -1                                                                                       // next hop is unknown
-                        || e.getValue() < distance.get(next)                                                        // next hop with smaller distance is found
-                        || (e.getValue() == distance.get(next) && tieBreaker(nextHop, next) == nextHop))            // next hop with same distance is found
+                if(next == -1                                                           // next hop is unknown
+                        || e.getValue() < nextHopDistance                               // next hop with smaller distance is found
+                        || (e.getValue().intValue() == nextHopDistance.intValue() 
+                        && tieBreaker(nextHop, next) == nextHop)) {                     // next hop with same distance is found
                     next = e.getKey();
+                    nextHopDistance = e.getValue();
+                }
             }
             if(next == -1)
                 break;

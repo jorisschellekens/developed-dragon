@@ -15,7 +15,7 @@ import java.util.Random;
 public class SpeedPerformanceTest {
 
     private static Random RANDOM = new java.util.Random(System.currentTimeMillis());
-    private int N = 10;
+    private int N = 1000;
 
     public static void main(String[] args)
     {

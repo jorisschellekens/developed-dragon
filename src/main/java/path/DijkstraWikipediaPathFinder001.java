@@ -59,6 +59,11 @@ public class DijkstraWikipediaPathFinder001 implements IWikipediaPathFinder {
         if(!goals.contains(endId))
             goals.add(endId);
 
+        final Set<Integer> tmp = new HashSet<>();
+        tmp.addAll(core.keySet());
+        tmp.addAll(goals);
+        tmp.add(startId);
+        
         int[] pathA = new AbstractDijkstraAlgorithm() {
             @Override
             public int tieBreaker(int ID0, int ID1){return priority(ID0) > priority(ID1) ? ID0 : ID1;}
@@ -67,7 +72,7 @@ public class DijkstraWikipediaPathFinder001 implements IWikipediaPathFinder {
             @Override
             public Collection<Integer> nextHop(int ID) { return ID == startId ? WikipediaCache.get().outgoing(ID) : core.get(ID);}
             @Override
-            public boolean has(int ID) { return ID == startId || core.containsKey(ID) || goals.contains(ID);}
+            public boolean has(int ID) { return tmp.contains(ID);}
         }.path(startId, goToCore(endId));
 
         // exception
