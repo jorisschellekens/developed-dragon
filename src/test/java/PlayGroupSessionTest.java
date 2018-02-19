@@ -12,7 +12,7 @@ import wikipedia.WikipediaCache;
 import java.io.File;
 
 /**
- * This test live-plays a game (or multiple games) of TheWikiGame
+ * This testFile live-plays a game (or multiple games) of TheWikiGame
  * Created by joris on 2/11/18.
  */
 public class PlayGroupSessionTest {

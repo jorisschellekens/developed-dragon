@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * This test prints out the performance (success ratio) of
+ * This testFile prints out the performance (success ratio) of
  * finding a path with fixed decimation ratios.
  * Created by joris on 2/2/18.
  */
@@ -34,7 +34,7 @@ public class DecimationPerformanceTest {
         // copy cache
         copyCache();
 
-        // test
+        // testFile
         List<String> articles = new ArrayList<>(WikipediaCache.get().articles());
         pathFinder = new DijkstraWikipediaPathFinder002(decimationRate);
         double p = 0.0;
