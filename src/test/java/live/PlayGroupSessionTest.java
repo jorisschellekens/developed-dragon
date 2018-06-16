@@ -1,3 +1,5 @@
+package live;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -36,7 +38,7 @@ public class PlayGroupSessionTest {
 
     @Test
     public void login() {
-        DRIVER.get("https://groups.thewikigame.com/login?code=" + PUBLIC_GROUP_CODE);
+        DRIVER.get("https://thewikigame.com/");
         try {
             Thread.sleep(WAIT_TIME);
         } catch (InterruptedException e) {
@@ -50,11 +52,11 @@ public class PlayGroupSessionTest {
     private boolean initScreenVisible()
     {
         try{
-            if(!DRIVER.getCurrentUrl().equals("https://groups.thewikigame.com/group"))
+            if(!DRIVER.getCurrentUrl().equals("https://thewikigame.com/group"))
                 return false;
             if(DRIVER.findElements(By.cssSelector("div.wgg-article-link")).size() != 2)
                 return false;
-            if(!DRIVER.findElement(By.tagName("button")).getText().equalsIgnoreCase("Play Now"))
+            if(!DRIVER.findElement(By.cssSelector("button#playNowButton")).getText().startsWith("PLAY NOW"))
                 return false;
             return true;
         }catch (Exception ex){}
@@ -124,7 +126,7 @@ public class PlayGroupSessionTest {
             if(i == 0)
             {
                 try {
-                    DRIVER.findElement(By.cssSelector("button.h1")).click();
+                    DRIVER.findElement(By.cssSelector("button#playNowButton")).click();
                     Thread.sleep(WAIT_TIME);
                 }catch (Exception ex){}
             }

@@ -1,3 +1,5 @@
+package headless;
+
 import org.testng.annotations.Test;
 import path.DijkstraWikipediaPathFinder001;
 import path.IWikipediaPathFinder;

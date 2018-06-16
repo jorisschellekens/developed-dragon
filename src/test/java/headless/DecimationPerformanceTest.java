@@ -1,3 +1,5 @@
+package headless;
+
 import org.apache.commons.io.FileUtils;
 import org.testng.annotations.Test;
 import path.DijkstraWikipediaPathFinder002;

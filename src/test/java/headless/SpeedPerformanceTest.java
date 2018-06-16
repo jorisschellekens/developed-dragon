@@ -1,5 +1,6 @@
+package headless;
+
 import org.testng.annotations.Test;
-import path.meta.CanonizingPathFinder;
 import path.DijkstraWikipediaPathFinder001;
 import path.IWikipediaPathFinder;
 import path.meta.DownloadingPathFinder;

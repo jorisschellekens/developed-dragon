@@ -1,3 +1,5 @@
+package headless;
+
 import miner.DepthFirstWikipediaMiner;
 import org.testng.annotations.Test;
 import wikipedia.WikipediaCache;
