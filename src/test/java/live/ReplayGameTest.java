@@ -60,20 +60,23 @@ public class ReplayGameTest {
 
     public void nextState(){
         if(currentState == GameState.LOGIN){
-            login();
+            onLogin();
         }
         if(currentState == GameState.WAIT_FOR_NEXT_ROUND){
-            waitForNextRound();
+            onWaitForNextRound();
         }
         if(currentState == GameState.NEXT_ROUND_ANNOUNCED){
-            play();
+            onNextRoundAnnounced();
         }
         if(currentState == GameState.REPLAYING){
-            replay();
+            onReplay();
+        }
+        if(currentState == GameState.ERROR){
+            onError();
         }
     }
 
-    private void login(){
+    private void onLogin(){
         DRIVER.get("https://thewikigame.com/");
         try {Thread.sleep(WAIT_TIME); } catch (InterruptedException e) {}
 
@@ -100,7 +103,7 @@ public class ReplayGameTest {
         }
     }
 
-    private void waitForNextRound(){
+    private void onWaitForNextRound(){
 
         boolean isNextRoundAnnounced = false;
         while(!isNextRoundAnnounced){
@@ -128,7 +131,7 @@ public class ReplayGameTest {
         currentState = GameState.NEXT_ROUND_ANNOUNCED;
     }
 
-    private void play(){
+    private void onNextRoundAnnounced(){
         start = DRIVER.findElements(By.cssSelector("div.wgg-article-link")).get(0).getText();
         goal = DRIVER.findElements(By.cssSelector("div.wgg-article-link")).get(1).getText();
         previousPaths.clear();
@@ -181,10 +184,15 @@ public class ReplayGameTest {
         }
 
         // close win box
-        DRIVER.switchTo().parentFrame();
-        if(DRIVER.findElement(By.tagName("button")) != null) {
-            DRIVER.findElement(By.tagName("button")).click();
-            try {Thread.sleep(WAIT_TIME); }catch (Exception ex){}
+        try{
+            DRIVER.switchTo().parentFrame();
+            if(DRIVER.findElement(By.tagName("button")) != null) {
+                DRIVER.findElement(By.tagName("button")).click();
+                try {Thread.sleep(WAIT_TIME); }catch (Exception ex){}
+            }
+        }catch (Exception ex){
+            currentState = GameState.ERROR;
+            return;
         }
 
         // next
@@ -210,7 +218,7 @@ public class ReplayGameTest {
         return false;
     }
 
-    private void replay(){
+    private void onReplay(){
         if(previousPaths.isEmpty()){
             currentState = GameState.ERROR;
         }
@@ -253,14 +261,27 @@ public class ReplayGameTest {
         }
 
         // close win box
-        DRIVER.switchTo().parentFrame();
-        if(DRIVER.findElement(By.tagName("button")) != null) {
-            DRIVER.findElement(By.tagName("button")).click();
-            try {Thread.sleep(WAIT_TIME); }catch (Exception ex){}
+        try {
+            DRIVER.switchTo().parentFrame();
+            if (DRIVER.findElement(By.tagName("button")) != null) {
+                DRIVER.findElement(By.tagName("button")).click();
+                try {
+                    Thread.sleep(WAIT_TIME);
+                } catch (Exception ex) {
+                }
+            }
+        }catch (Exception ex){
+            currentState = GameState.ERROR;
+            return;
         }
 
         // update status
         currentState = GameState.REPLAYING;
     }
 
+    private void onError(){
+        DRIVER.get("https://thewikigame.com/group");
+        try {Thread.sleep(WAIT_TIME); }catch (Exception ex){}
+        currentState = GameState.WAIT_FOR_NEXT_ROUND;
+    }
 }
