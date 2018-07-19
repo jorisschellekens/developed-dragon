@@ -9,11 +9,15 @@ import path.DijkstraWikipediaPathFinder001;
 import path.IWikipediaPathFinder;
 import path.meta.CanonizingPathFinder;
 import path.meta.DownloadingPathFinder;
+import sheets.GoogleSheet;
 import wikipedia.WikipediaCache;
 
 import java.io.File;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 public class ReplayGameTest {
@@ -50,15 +54,18 @@ public class ReplayGameTest {
     private List<String[]> previousPaths = new ArrayList<>();
     private List<String[]> tempRemovedLinks = new ArrayList<>();
 
+    // logging
+    private GoogleSheet googleSheet = new GoogleSheet("15sOxKy0PkJbHW-0slXyuxeHuCXybmAy9q8ZOqkJLuZs");
+
     @Test
-    public void playGame(){
+    public void playGame() throws GeneralSecurityException, IOException {
         while(currentState != GameState.ERROR){
             System.out.println(currentState.toString());
             nextState();
         }
     }
 
-    public void nextState(){
+    public void nextState() throws GeneralSecurityException, IOException {
         if(currentState == GameState.LOGIN){
             onLogin();
         }
@@ -131,7 +138,7 @@ public class ReplayGameTest {
         currentState = GameState.NEXT_ROUND_ANNOUNCED;
     }
 
-    private void onNextRoundAnnounced(){
+    private void onNextRoundAnnounced() throws GeneralSecurityException, IOException {
         start = DRIVER.findElements(By.cssSelector("div.wgg-article-link")).get(0).getText();
         goal = DRIVER.findElements(By.cssSelector("div.wgg-article-link")).get(1).getText();
         previousPaths.clear();
@@ -195,6 +202,9 @@ public class ReplayGameTest {
             return;
         }
 
+        // update sheet
+        logWin(path);
+
         // next
         currentState = GameState.REPLAYING;
     }
@@ -218,7 +228,7 @@ public class ReplayGameTest {
         return false;
     }
 
-    private void onReplay(){
+    private void onReplay() throws GeneralSecurityException, IOException {
         if(previousPaths.isEmpty()){
             currentState = GameState.ERROR;
         }
@@ -275,6 +285,9 @@ public class ReplayGameTest {
             return;
         }
 
+        // update sheet
+        logWin(path);
+
         // update status
         currentState = GameState.REPLAYING;
     }
@@ -283,5 +296,12 @@ public class ReplayGameTest {
         DRIVER.get("https://thewikigame.com/group");
         try {Thread.sleep(WAIT_TIME); }catch (Exception ex){}
         currentState = GameState.WAIT_FOR_NEXT_ROUND;
+    }
+
+    private void logWin(String[] path) throws GeneralSecurityException, IOException {
+        int emptyRow = googleSheet.emptyRow();
+        List<List<Object>> vals = new ArrayList<>();
+        vals.add(Arrays.asList(new Object[]{new Date().toString(), path[0], path[path.length-1], Arrays.toString(path), path.length}));
+        googleSheet.set("a" + emptyRow + ":e", vals);
     }
 }

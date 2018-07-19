@@ -145,6 +145,7 @@ $RECYCLE.BIN/
 *.lnk
 
 target/
+credentials/
 nbactions*.xml
 *.patch
 *.md.html
